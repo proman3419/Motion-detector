@@ -89,6 +89,7 @@ def main_loop(is_debug, sensitivity_areas, cap, curr_frame, next_frame):
 if __name__ == '__main__':
     if len(sys.argv) < MIN_PARAMS_CNT or sys.argv[1] == 'help':
         print('python3 motion_detectory.py <stream_src[url/path]> <debug[0/1]> <sensitivity_areas[x_min,x_max,y_min,y_max,min_size|...]>')
+        exit(0)
 
     stream_src = sys.argv[1]
     is_debug = bool(int(sys.argv[2]))
