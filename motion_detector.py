@@ -4,8 +4,8 @@ import sys
 MIN_PARAMS_CNT = 4
 GAUSS_KERNEL_VAL = 5
 DILATED_ITERATIONS_CNT = 15
-OUTPUT_WIDTH = 1366
-OUTPUT_HEGIHT = 768
+OUTPUT_WIDTH = 600
+OUTPUT_HEGIHT = 400
 URL = 'https://imageserver.webcamera.pl/rec/krakow1/latest.mp4'
 TRUE = 1
 THRESH_VALUE = 40
@@ -16,11 +16,12 @@ def resize_and_show_frame(frame, title):
     cv2.imshow(title, frame)
 
 
-def main_loop(debug, sensitivity, cap, frame_dims, previous_frame, curr_frame):
-    i = 0
-    # cv2.imshow('essa z romanem', curr_frame)
+def main_loop(debug, sensitivity, cap, frame_dims, curr_frame, next_frame):
+    resize_and_show_frame(curr_frame, 'Result')
+    resize_and_show_frame(next_frame, 'Result')
+
     while cap.isOpened():
-        diff_frame = cv2.absdiff(previous_frame, curr_frame)
+        diff_frame = cv2.absdiff(curr_frame, next_frame)
         gray_frame = cv2.cvtColor(diff_frame, cv2.COLOR_BGR2GRAY)
         blured_frame = cv2.GaussianBlur(gray_frame, (GAUSS_KERNEL_VAL,
                                                      GAUSS_KERNEL_VAL), 0)
@@ -32,11 +33,13 @@ def main_loop(debug, sensitivity, cap, frame_dims, previous_frame, curr_frame):
                                        cv2.CHAIN_APPROX_SIMPLE)
 
         resize_and_show_frame(curr_frame, 'Result')
+        resize_and_show_frame(next_frame, 'Result')
 
-        previous_frame = curr_frame
-        _, curr_frame = cap.read()
+        curr_frame = next_frame
+        _, next_frame = cap.read()
 
-        i += 1
+        if cv2.waitKey(40) == 27:
+            break
 
 
 if __name__ == '__main__':
@@ -54,7 +57,7 @@ if __name__ == '__main__':
     frame_dims = (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)),
                   int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
 
-    _, previous_frame = cap.read()
     _, curr_frame = cap.read()
+    _, next_frame = cap.read()
 
-    main_loop(debug, sensitivity, cap, frame_dims, previous_frame, curr_frame)
+    main_loop(debug, sensitivity, cap, frame_dims, curr_frame, next_frame)
