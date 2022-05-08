@@ -10,7 +10,7 @@ URL = 'https://imageserver.webcamera.pl/rec/krakow1/latest.mp4'
 TRUE = 1
 THRESH_VALUE = 40
 
-#TODO len(frame) ustawiac
+# TODO len(frame) ustawiac
 INPUT_WIDTH = 2000
 INPUT_HEIGHT = 1300
 
@@ -25,7 +25,7 @@ SENSITIVE_OF_CONTOURS = [(START_WIDTH, START_HEIGHT, END_WIDTH, END_HEIGHT // 2,
 
 
 def resize_and_show_frame(frame, title):
-    frame = cv2.resize(frame, (OUTPUT_WIDTH, OUTPUT_HEGIHT))
+    frame = cv2.resize(frame, (600, 400))
     cv2.imshow(title, frame)
 
 
@@ -42,7 +42,18 @@ def create_contours(curr_frame, contours):
                                 1, (0, 0, 255), 3)
 
 
-def main_loop(debug, sensitivity, cap, frame_dims, curr_frame, next_frame):
+def debug(curr_frame, next_frame, diff, gray, blur, thresh, dilated):
+    resize_and_show_frame("Curr frame", curr_frame)
+    resize_and_show_frame("Next frame", next_frame)
+    resize_and_show_frame("Diff", diff)
+    resize_and_show_frame("Gray", gray)
+    resize_and_show_frame("Blur", blur)
+    resize_and_show_frame("Thresh", thresh)
+    resize_and_show_frame("Dilated", dilated)
+    resize_and_show_frame("Result", curr_frame)
+
+
+def main_loop(is_debug, sensitivity, cap, frame_dims, curr_frame, next_frame):
     while cap.isOpened():
         diff_frame = cv2.absdiff(curr_frame, next_frame)
         gray_frame = cv2.cvtColor(diff_frame, cv2.COLOR_BGR2GRAY)
@@ -55,8 +66,11 @@ def main_loop(debug, sensitivity, cap, frame_dims, curr_frame, next_frame):
         contours, _ = cv2.findContours(dilated_frame, cv2.RETR_TREE,
                                        cv2.CHAIN_APPROX_SIMPLE)
 
-        create_contours(curr_frame, contours)
-        resize_and_show_frame(curr_frame, 'Result')
+        if is_debug:
+            debug(curr_frame, next_frame, diff_frame, gray_frame, blured_frame, thresh_frame, dilated_frame)
+        else:
+            create_contours(curr_frame, contours)
+            resize_and_show_frame(curr_frame, 'Result')
 
         curr_frame = next_frame
         _, next_frame = cap.read()
@@ -72,7 +86,7 @@ if __name__ == '__main__':
     # stream_src = sys.argv[1]
     stream_src = URL
     # debug = bool(int(sys.argv[2]))
-    debug = TRUE
+    is_debug = TRUE
     # sensitivity = float(sys.argv[3])
     sensitivity = TRUE
 
@@ -83,4 +97,4 @@ if __name__ == '__main__':
     _, curr_frame = cap.read()
     _, next_frame = cap.read()
 
-    main_loop(debug, sensitivity, cap, frame_dims, curr_frame, next_frame)
+    main_loop(is_debug, sensitivity, cap, frame_dims, curr_frame, next_frame)
