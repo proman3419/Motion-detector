@@ -15,10 +15,19 @@ THRESH_VALUE = 40
 
 
 def preprocess_sensitivity_areas(sensitivity_areas_raw):
+    global INPUT_WIDTH, INPUT_HEIGHT
+
     sensitivity_areas = []
     for e in sensitivity_areas_raw.split('/'):
         x_min, x_max, y_min, y_max, min_size = map(int, e.split(','))
-        sensitivity_areas.append(SensitivityArea(x_min, x_max, y_min, y_max, min_size))
+        x_min *= INPUT_WIDTH / 100
+        x_max *= INPUT_WIDTH / 100
+        y_min *= INPUT_HEIGHT / 100
+        y_max *= INPUT_HEIGHT / 100
+        min_size *= INPUT_WIDTH / 100 * INPUT_HEIGHT / 100
+        sensitivity_areas.append(SensitivityArea(int(x_min), int(x_max), 
+                                                 int(y_min), int(y_max),
+                                                 int(min_size)))
     return sensitivity_areas
 
 
@@ -88,12 +97,11 @@ def main_loop(is_debug, sensitivity_areas, cap, curr_frame, next_frame):
 
 if __name__ == '__main__':
     if len(sys.argv) < MIN_PARAMS_CNT or sys.argv[1] == 'help':
-        print('python3 motion_detectory.py <stream_src[url/path]> <debug[0/1]> <sensitivity_areas[x_min,x_max,y_min,y_max,min_size|...]>')
+        print('python3 motion_detectory.py <stream_src[url/path]> <debug[0/1]> <sensitivity_areas[x_min,x_max,y_min,y_max,min_size/...][%]>')
         exit(0)
 
     stream_src = sys.argv[1]
     is_debug = bool(int(sys.argv[2]))
-    sensitivity_areas = preprocess_sensitivity_areas(sys.argv[3])
 
     cap = cv2.VideoCapture(stream_src)
 
@@ -102,5 +110,7 @@ if __name__ == '__main__':
 
     INPUT_WIDTH = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     INPUT_HEIGHT = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    sensitivity_areas = preprocess_sensitivity_areas(sys.argv[3])
 
     main_loop(is_debug, sensitivity_areas, cap, curr_frame, next_frame)
